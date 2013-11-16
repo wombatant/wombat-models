@@ -8,5 +8,6 @@ cpp:
 go:
 	cyborgbear -i enginemodels.cy -o models.go -t go
 	rm -f models.cy
+	go build
 clean:
 	rm -f models.*
