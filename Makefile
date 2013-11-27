@@ -1,13 +1,14 @@
-all: cpp editorcpp go
-editorcpp:
+all: enginemodels editormodels go liccor
+editormodels:
 	cat enginemodels.cy editormodels.cy > models.cy
-	cyborgbear -i models.cy -o models -lc
-cpp:
-	cyborgbear -i enginemodels.cy -o enginemodels -lc
+	cyborgbear -i models.cy -o editormodels -lc -t cpp-qt
 	rm -f models.cy
+enginemodels:
+	cyborgbear -i enginemodels.cy -o enginemodels -lc
 go:
 	cyborgbear -i enginemodels.cy -o models.go -t go
-	rm -f models.cy
 	go build
+liccor:
+	liccor
 clean:
-	rm -f models.*
+	rm -f models.cy enginemodels.hpp enginemodels.cpp editormodels.hpp editormodels.cpp
