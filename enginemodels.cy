@@ -106,7 +106,6 @@ SpriteSheet
 	Images				map[int]SpriteSheetImage
 	ImageIdIterator	int
 	RecycledImageIds	[]int
-	SheetIdx				Point
 
 Image
 	# Path to the sprite sheet the image is from
