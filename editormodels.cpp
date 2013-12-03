@@ -21,7 +21,7 @@
 using namespace models;
 using namespace models::cyborgbear;
 
-bool Model::readJsonFile(string path) {
+int Model::readJsonFile(string path) {
 	std::ifstream in;
 	in.open(cyborgbear::toCString(path));
 	std::string json;
@@ -32,10 +32,9 @@ bool Model::readJsonFile(string path) {
 			json += s;
 		}
 		in.close();
-		fromJson(cyborgbear::toString(json));
-		return true;
+		return fromJson(cyborgbear::toString(json));
 	}
-	return false;
+	return cyborgbear::Error_CouldNotAccessFile;
 }
 
 void Model::writeJsonFile(string path, cyborgbear::JsonSerializationSettings sttngs) {
@@ -46,10 +45,11 @@ void Model::writeJsonFile(string path, cyborgbear::JsonSerializationSettings stt
 	out.close();
 }
 
-void Model::fromJson(string json) {
+int Model::fromJson(string json) {
 	cyborgbear::JsonValOut obj = cyborgbear::read(json);
-	loadJsonObj(obj);
+	unsigned long int retval = loadJsonObj(obj);
 	cyborgbear::decref(obj);
+	return retval;
 }
 
 string Model::toJson(cyborgbear::JsonSerializationSettings sttngs) {
@@ -84,7 +84,7 @@ unknown::unknown(string v) {
 unknown::~unknown() {
 }
 
-bool unknown::loadJsonObj(cyborgbear::JsonVal obj) {
+unsigned long int unknown::loadJsonObj(cyborgbear::JsonVal obj) {
 	cyborgbear::JsonObjOut wrapper = cyborgbear::newJsonObj();
 	cyborgbear::objSet(wrapper, "Value", obj);
 	m_data = cyborgbear::write(wrapper, cyborgbear::Compact);
@@ -100,7 +100,11 @@ bool unknown::loadJsonObj(cyborgbear::JsonVal obj) {
 		m_type = cyborgbear::Object;
 	}
 
-	return !cyborgbear::isNull(obj);
+	if (cyborgbear::isNull(obj)) {
+		return cyborgbear::Error_GenericParsingError;
+	} else {
+		return cyborgbear::Error_Ok;
+	}
 }
 
 cyborgbear::JsonValOut unknown::buildJsonObj() {
@@ -389,26 +393,36 @@ ZoneHeader::ZoneHeader() {
 	this->path = "";
 }
 
-bool CreatureType::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int CreatureType::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Name");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isObj(obj0)) {
-			cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
-			for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
-				string i;
-				cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
-				{
-					std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
-					std::string o;
-					std::stringstream s;
-					s << key;
-					s >> o;
-					i = o.c_str();
-				}
-				{
-					if (cyborgbear::isString(obj1)) {
-						this->name[i] = cyborgbear::toString(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isObj(obj0)) {
+				cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
+				for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
+					string i;
+					cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
+					{
+						std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
+						std::string o;
+						std::stringstream s;
+						s << key;
+						s >> o;
+						i = o.c_str();
+					}
+					{
+						if (cyborgbear::isString(obj1)) {
+							this->name[i] = cyborgbear::toString(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
 			}
@@ -419,51 +433,85 @@ bool CreatureType::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isBool(obj0)) {
 				this->special = cyborgbear::toBool(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "StrongAgainst");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->strongAgainst.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				{
-					if (cyborgbear::isString(obj1)) {
-						this->strongAgainst[i] = cyborgbear::toString(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->strongAgainst.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					{
+						if (cyborgbear::isString(obj1)) {
+							this->strongAgainst[i] = cyborgbear::toString(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "WeakAgainst");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->weakAgainst.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				{
-					if (cyborgbear::isString(obj1)) {
-						this->weakAgainst[i] = cyborgbear::toString(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->weakAgainst.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					{
+						if (cyborgbear::isString(obj1)) {
+							this->weakAgainst[i] = cyborgbear::toString(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool StatusEffect::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int StatusEffect::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "AttackerEffect");
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->attackerEffect = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -472,19 +520,33 @@ bool StatusEffect::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->enemyEffect = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool Fraction::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int Fraction::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Current");
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->current = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -493,32 +555,54 @@ bool Fraction::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->available = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool ModelFile::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int ModelFile::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Type");
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->type = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool Point::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int Point::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "X");
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->x = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -527,19 +611,33 @@ bool Point::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->y = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool Size::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int Size::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Width");
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->width = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -548,19 +646,33 @@ bool Size::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->height = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool Bounds::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int Bounds::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "X");
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->x = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -569,6 +681,12 @@ bool Bounds::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->y = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -577,6 +695,12 @@ bool Bounds::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->width = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -585,59 +709,85 @@ bool Bounds::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->height = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool SaveVariables::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int SaveVariables::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Vars");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isObj(obj0)) {
-			cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
-			for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
-				string i;
-				cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
-				{
-					std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
-					std::string o;
-					std::stringstream s;
-					s << key;
-					s >> o;
-					i = o.c_str();
-				}
-				{
-					this->vars[i].loadJsonObj(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isObj(obj0)) {
+				cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
+				for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
+					string i;
+					cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
+					{
+						std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
+						std::string o;
+						std::stringstream s;
+						s << key;
+						s >> o;
+						i = o.c_str();
+					}
+					{
+						retval |= this->vars[i].loadJsonObj(obj1);
+					}
 				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool SpriteSheetImage::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int SpriteSheetImage::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "SrcBounds");
 		{
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->srcBounds.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool SpriteSheet::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int SpriteSheet::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "TilesWide");
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->tilesWide = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -646,6 +796,12 @@ bool SpriteSheet::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->tilesHigh = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -654,6 +810,12 @@ bool SpriteSheet::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->tileWidth = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -662,6 +824,12 @@ bool SpriteSheet::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->tileHeight = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -670,26 +838,40 @@ bool SpriteSheet::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->srcFile = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Images");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isObj(obj0)) {
-			cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
-			for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
-				int i;
-				cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
-				{
-					std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
-					std::stringstream s;
-					s << key;
-					s >> i;
-				}
-				{
-					cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
-					if (cyborgbear::isObj(finalObj)) {
-						this->images[i].loadJsonObj(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isObj(obj0)) {
+				cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
+				for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
+					int i;
+					cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
+					{
+						std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
+						std::stringstream s;
+						s << key;
+						s >> i;
+					}
+					{
+						cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
+						if (cyborgbear::isObj(finalObj)) {
+							this->images[i].loadJsonObj(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
 			}
@@ -700,35 +882,59 @@ bool SpriteSheet::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->imageIdIterator = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "RecycledImageIds");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->recycledImageIds.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				{
-					if (cyborgbear::isInt(obj1)) {
-						this->recycledImageIds[i] = cyborgbear::toInt(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->recycledImageIds.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					{
+						if (cyborgbear::isInt(obj1)) {
+							this->recycledImageIds[i] = cyborgbear::toInt(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool Image::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int Image::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "SpriteSheet");
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->spriteSheet = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -737,6 +943,12 @@ bool Image::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->imgId = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -746,50 +958,82 @@ bool Image::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->defaultSize.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool Animation::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int Animation::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Interval");
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->interval = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Images");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->images.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				{
-					cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
-					if (cyborgbear::isObj(finalObj)) {
-						this->images[i].loadJsonObj(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->images.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					{
+						cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
+						if (cyborgbear::isObj(finalObj)) {
+							this->images[i].loadJsonObj(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool AnimLayer::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int AnimLayer::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Point");
 		{
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->point.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -799,32 +1043,48 @@ bool AnimLayer::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->animation.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool CreatureClass::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int CreatureClass::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Name");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isObj(obj0)) {
-			cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
-			for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
-				string i;
-				cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
-				{
-					std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
-					std::string o;
-					std::stringstream s;
-					s << key;
-					s >> o;
-					i = o.c_str();
-				}
-				{
-					if (cyborgbear::isString(obj1)) {
-						this->name[i] = cyborgbear::toString(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isObj(obj0)) {
+				cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
+				for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
+					string i;
+					cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
+					{
+						std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
+						std::string o;
+						std::stringstream s;
+						s << key;
+						s >> o;
+						i = o.c_str();
+					}
+					{
+						if (cyborgbear::isString(obj1)) {
+							this->name[i] = cyborgbear::toString(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
 			}
@@ -835,6 +1095,12 @@ bool CreatureClass::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->successor = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -843,57 +1109,91 @@ bool CreatureClass::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->predecessor = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Types");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->types.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				{
-					if (cyborgbear::isString(obj1)) {
-						this->types[i] = cyborgbear::toString(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->types.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					{
+						if (cyborgbear::isString(obj1)) {
+							this->types[i] = cyborgbear::toString(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "CanLearn");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->canLearn.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				{
-					if (cyborgbear::isString(obj1)) {
-						this->canLearn[i] = cyborgbear::toString(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->canLearn.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					{
+						if (cyborgbear::isString(obj1)) {
+							this->canLearn[i] = cyborgbear::toString(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "LearnsAtLevel");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isObj(obj0)) {
-			cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
-			for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
-				int i;
-				cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
-				{
-					std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
-					std::stringstream s;
-					s << key;
-					s >> i;
-				}
-				{
-					if (cyborgbear::isString(obj1)) {
-						this->learnsAtLevel[i] = cyborgbear::toString(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isObj(obj0)) {
+				cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
+				for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
+					int i;
+					cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
+					{
+						std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
+						std::stringstream s;
+						s << key;
+						s >> i;
+					}
+					{
+						if (cyborgbear::isString(obj1)) {
+							this->learnsAtLevel[i] = cyborgbear::toString(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
 			}
@@ -905,6 +1205,12 @@ bool CreatureClass::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->frontView.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -914,32 +1220,48 @@ bool CreatureClass::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->backView.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool CreatureMove::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int CreatureMove::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Name");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isObj(obj0)) {
-			cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
-			for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
-				string i;
-				cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
-				{
-					std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
-					std::string o;
-					std::stringstream s;
-					s << key;
-					s >> o;
-					i = o.c_str();
-				}
-				{
-					if (cyborgbear::isString(obj1)) {
-						this->name[i] = cyborgbear::toString(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isObj(obj0)) {
+				cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
+				for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
+					string i;
+					cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
+					{
+						std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
+						std::string o;
+						std::stringstream s;
+						s << key;
+						s >> o;
+						i = o.c_str();
+					}
+					{
+						if (cyborgbear::isString(obj1)) {
+							this->name[i] = cyborgbear::toString(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
 			}
@@ -950,6 +1272,12 @@ bool CreatureMove::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->type = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -958,6 +1286,12 @@ bool CreatureMove::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->power = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -966,6 +1300,12 @@ bool CreatureMove::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isBool(obj0)) {
 				this->requiresRegarge = cyborgbear::toBool(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -974,6 +1314,12 @@ bool CreatureMove::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->script = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -983,6 +1329,12 @@ bool CreatureMove::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->burn.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -992,6 +1344,12 @@ bool CreatureMove::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->freeze.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1001,6 +1359,12 @@ bool CreatureMove::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->paralyze.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1010,6 +1374,12 @@ bool CreatureMove::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->poison.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1019,19 +1389,33 @@ bool CreatureMove::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->sleep.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool CreatureMoveInstance::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int CreatureMoveInstance::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "CreatureMove");
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->creatureMove = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1041,40 +1425,62 @@ bool CreatureMoveInstance::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->pP.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool Creature::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int Creature::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "ID");
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->iD = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Name");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isObj(obj0)) {
-			cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
-			for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
-				string i;
-				cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
-				{
-					std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
-					std::string o;
-					std::stringstream s;
-					s << key;
-					s >> o;
-					i = o.c_str();
-				}
-				{
-					if (cyborgbear::isString(obj1)) {
-						this->name[i] = cyborgbear::toString(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isObj(obj0)) {
+				cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
+				for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
+					string i;
+					cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
+					{
+						std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
+						std::string o;
+						std::stringstream s;
+						s << key;
+						s >> o;
+						i = o.c_str();
+					}
+					{
+						if (cyborgbear::isString(obj1)) {
+							this->name[i] = cyborgbear::toString(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
 			}
@@ -1085,6 +1491,12 @@ bool Creature::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->creatureClass = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1093,6 +1505,12 @@ bool Creature::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isBool(obj0)) {
 				this->male = cyborgbear::toBool(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1101,6 +1519,12 @@ bool Creature::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->level = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1110,6 +1534,12 @@ bool Creature::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->health.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1118,6 +1548,12 @@ bool Creature::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->attack = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1126,6 +1562,12 @@ bool Creature::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->specAttack = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1134,6 +1576,12 @@ bool Creature::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->defense = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1142,6 +1590,12 @@ bool Creature::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->specDefense = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1150,6 +1604,12 @@ bool Creature::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isBool(obj0)) {
 				this->burned = cyborgbear::toBool(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1158,6 +1618,12 @@ bool Creature::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isBool(obj0)) {
 				this->frozen = cyborgbear::toBool(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1166,6 +1632,12 @@ bool Creature::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isBool(obj0)) {
 				this->poisoned = cyborgbear::toBool(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1174,36 +1646,60 @@ bool Creature::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isBool(obj0)) {
 				this->asleep = cyborgbear::toBool(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Moves");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->moves.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				{
-					cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
-					if (cyborgbear::isObj(finalObj)) {
-						this->moves[i].loadJsonObj(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->moves.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					{
+						cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
+						if (cyborgbear::isObj(finalObj)) {
+							this->moves[i].loadJsonObj(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool EditorDockSettings::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int EditorDockSettings::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Docked");
 		{
 			if (cyborgbear::isBool(obj0)) {
 				this->docked = cyborgbear::toBool(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1212,6 +1708,12 @@ bool EditorDockSettings::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isBool(obj0)) {
 				this->visible = cyborgbear::toBool(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1221,19 +1723,33 @@ bool EditorDockSettings::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->undocked.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool User::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int User::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "PersonID");
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->personID = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1242,6 +1758,12 @@ bool User::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->world = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1250,6 +1772,12 @@ bool User::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->zone = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1258,6 +1786,12 @@ bool User::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->xAddress = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1266,6 +1800,12 @@ bool User::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->yAddress = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1274,40 +1814,62 @@ bool User::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->layer = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool PersonClass::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int PersonClass::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "ID");
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->iD = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Name");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isObj(obj0)) {
-			cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
-			for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
-				string i;
-				cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
-				{
-					std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
-					std::string o;
-					std::stringstream s;
-					s << key;
-					s >> o;
-					i = o.c_str();
-				}
-				{
-					if (cyborgbear::isString(obj1)) {
-						this->name[i] = cyborgbear::toString(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isObj(obj0)) {
+				cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
+				for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
+					string i;
+					cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
+					{
+						std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
+						std::string o;
+						std::stringstream s;
+						s << key;
+						s >> o;
+						i = o.c_str();
+					}
+					{
+						if (cyborgbear::isString(obj1)) {
+							this->name[i] = cyborgbear::toString(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
 			}
@@ -1315,34 +1877,54 @@ bool PersonClass::loadJsonObj(cyborgbear::JsonVal in) {
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Creatures");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->creatures.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				{
-					if (cyborgbear::isInt(obj1)) {
-						this->creatures[i] = cyborgbear::toInt(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->creatures.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					{
+						if (cyborgbear::isInt(obj1)) {
+							this->creatures[i] = cyborgbear::toInt(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Overhead");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->overhead.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				{
-					cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
-					if (cyborgbear::isObj(finalObj)) {
-						this->overhead[i].loadJsonObj(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->overhead.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					{
+						cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
+						if (cyborgbear::isObj(finalObj)) {
+							this->overhead[i].loadJsonObj(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
@@ -1352,6 +1934,12 @@ bool PersonClass::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->frontView.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1361,36 +1949,58 @@ bool PersonClass::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->backView.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool Sprite::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int Sprite::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "AnimLayers");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->animLayers.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				if (!cyborgbear::isNull(obj1) && cyborgbear::isArray(obj1)) {
-					cyborgbear::JsonArrayOut array1 = cyborgbear::toArray(obj1);
-					unsigned int size = cyborgbear::arraySize(array1);
-					this->animLayers[i].resize(size);
-					for (unsigned int ii = 0; ii < size; ii++) {
-						cyborgbear::JsonValOut obj2 = cyborgbear::arrayRead(array1, ii);
-						{
-							cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj2);
-							if (cyborgbear::isObj(finalObj)) {
-								this->animLayers[i][ii].loadJsonObj(obj2);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->animLayers.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					if (!cyborgbear::isNull(obj1)) {
+						if (cyborgbear::isArray(obj1)) {
+							cyborgbear::JsonArrayOut array1 = cyborgbear::toArray(obj1);
+							unsigned int size = cyborgbear::arraySize(array1);
+							this->animLayers[i].resize(size);
+							for (unsigned int ii = 0; ii < size; ii++) {
+								cyborgbear::JsonValOut obj2 = cyborgbear::arrayRead(array1, ii);
+								{
+									cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj2);
+									if (cyborgbear::isObj(finalObj)) {
+										this->animLayers[i][ii].loadJsonObj(obj2);
+									} else {
+										if (cyborgbear::isNull(obj2)) {
+											retval |= cyborgbear::Error_MissingField;
+										} else {
+											retval |= cyborgbear::Error_TypeMismatch;
+										}
+									}
+								}
 							}
+						} else {
+							retval |= cyborgbear::Error_TypeMismatch | retval;
 						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
@@ -1399,6 +2009,12 @@ bool Sprite::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->spriteType = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1407,6 +2023,12 @@ bool Sprite::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->personID = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1415,6 +2037,12 @@ bool Sprite::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->speed = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1423,6 +2051,12 @@ bool Sprite::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->name = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1431,6 +2065,12 @@ bool Sprite::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->path = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1439,19 +2079,33 @@ bool Sprite::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->scriptPath = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool TileClass::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int TileClass::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "TerrainFlags");
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->terrainFlags = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1460,67 +2114,103 @@ bool TileClass::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->import = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "LowerAnims");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->lowerAnims.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				{
-					cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
-					if (cyborgbear::isObj(finalObj)) {
-						this->lowerAnims[i].loadJsonObj(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->lowerAnims.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					{
+						cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
+						if (cyborgbear::isObj(finalObj)) {
+							this->lowerAnims[i].loadJsonObj(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "UpperAnims");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->upperAnims.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				{
-					cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
-					if (cyborgbear::isObj(finalObj)) {
-						this->upperAnims[i].loadJsonObj(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->upperAnims.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					{
+						cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
+						if (cyborgbear::isObj(finalObj)) {
+							this->upperAnims[i].loadJsonObj(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool EditorSettings::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int EditorSettings::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "DockBounds");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isObj(obj0)) {
-			cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
-			for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
-				string i;
-				cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
-				{
-					std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
-					std::string o;
-					std::stringstream s;
-					s << key;
-					s >> o;
-					i = o.c_str();
-				}
-				{
-					cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
-					if (cyborgbear::isObj(finalObj)) {
-						this->dockBounds[i].loadJsonObj(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isObj(obj0)) {
+				cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
+				for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
+					string i;
+					cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
+					{
+						std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
+						std::string o;
+						std::stringstream s;
+						s << key;
+						s >> o;
+						i = o.c_str();
+					}
+					{
+						cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
+						if (cyborgbear::isObj(finalObj)) {
+							this->dockBounds[i].loadJsonObj(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
 			}
@@ -1531,22 +2221,38 @@ bool EditorSettings::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->openProject = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "OpenFiles");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->openFiles.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				{
-					if (cyborgbear::isString(obj1)) {
-						this->openFiles[i] = cyborgbear::toString(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->openFiles.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					{
+						if (cyborgbear::isString(obj1)) {
+							this->openFiles[i] = cyborgbear::toString(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
@@ -1555,20 +2261,34 @@ bool EditorSettings::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isInt(obj0)) {
 				this->openTab = cyborgbear::toInt(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool Tile::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int Tile::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "TileClass");
 		{
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->tileClass.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1578,60 +2298,96 @@ bool Tile::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->occupant.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool Zone::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int Zone::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Tiles");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->tiles.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				if (!cyborgbear::isNull(obj1) && cyborgbear::isArray(obj1)) {
-					cyborgbear::JsonArrayOut array1 = cyborgbear::toArray(obj1);
-					unsigned int size = cyborgbear::arraySize(array1);
-					this->tiles[i].resize(size);
-					for (unsigned int ii = 0; ii < size; ii++) {
-						cyborgbear::JsonValOut obj2 = cyborgbear::arrayRead(array1, ii);
-						if (!cyborgbear::isNull(obj2) && cyborgbear::isArray(obj2)) {
-							cyborgbear::JsonArrayOut array2 = cyborgbear::toArray(obj2);
-							unsigned int size = cyborgbear::arraySize(array2);
-							this->tiles[i][ii].resize(size);
-							for (unsigned int iii = 0; iii < size; iii++) {
-								cyborgbear::JsonValOut obj3 = cyborgbear::arrayRead(array2, iii);
-								{
-									cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj3);
-									if (cyborgbear::isObj(finalObj)) {
-										this->tiles[i][ii][iii].loadJsonObj(obj3);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->tiles.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					if (!cyborgbear::isNull(obj1)) {
+						if (cyborgbear::isArray(obj1)) {
+							cyborgbear::JsonArrayOut array1 = cyborgbear::toArray(obj1);
+							unsigned int size = cyborgbear::arraySize(array1);
+							this->tiles[i].resize(size);
+							for (unsigned int ii = 0; ii < size; ii++) {
+								cyborgbear::JsonValOut obj2 = cyborgbear::arrayRead(array1, ii);
+								if (!cyborgbear::isNull(obj2)) {
+									if (cyborgbear::isArray(obj2)) {
+										cyborgbear::JsonArrayOut array2 = cyborgbear::toArray(obj2);
+										unsigned int size = cyborgbear::arraySize(array2);
+										this->tiles[i][ii].resize(size);
+										for (unsigned int iii = 0; iii < size; iii++) {
+											cyborgbear::JsonValOut obj3 = cyborgbear::arrayRead(array2, iii);
+											{
+												cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj3);
+												if (cyborgbear::isObj(finalObj)) {
+													this->tiles[i][ii][iii].loadJsonObj(obj3);
+												} else {
+													if (cyborgbear::isNull(obj3)) {
+														retval |= cyborgbear::Error_MissingField;
+													} else {
+														retval |= cyborgbear::Error_TypeMismatch;
+													}
+												}
+											}
+										}
+									} else {
+										retval |= cyborgbear::Error_TypeMismatch | retval;
 									}
 								}
 							}
+						} else {
+							retval |= cyborgbear::Error_TypeMismatch | retval;
 						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "InitScripts");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->initScripts.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				{
-					if (cyborgbear::isString(obj1)) {
-						this->initScripts[i] = cyborgbear::toString(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->initScripts.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					{
+						if (cyborgbear::isString(obj1)) {
+							this->initScripts[i] = cyborgbear::toString(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
 					}
 				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
 			}
 		}
 	}
@@ -1641,45 +2397,63 @@ bool Zone::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->location.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool Person::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int Person::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "PersonClass");
 		{
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->personClass.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool SaveFile::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int SaveFile::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Vars");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isObj(obj0)) {
-			cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
-			for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
-				string i;
-				cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
-				{
-					std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
-					std::string o;
-					std::stringstream s;
-					s << key;
-					s >> o;
-					i = o.c_str();
-				}
-				{
-					this->vars[i].loadJsonObj(obj1);
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isObj(obj0)) {
+				cyborgbear::JsonObjOut map0 = cyborgbear::toObj(obj0);
+				for (cyborgbear::JsonObjIterator it1 = cyborgbear::jsonObjIterator(map0); !cyborgbear::iteratorAtEnd(it1, map0); it1 = cyborgbear::jsonObjIteratorNext(map0,  it1)) {
+					string i;
+					cyborgbear::JsonValOut obj1 = cyborgbear::iteratorValue(it1);
+					{
+						std::string key = cyborgbear::toStdString(cyborgbear::jsonObjIteratorKey(it1));
+						std::string o;
+						std::stringstream s;
+						s << key;
+						s >> o;
+						i = o.c_str();
+					}
+					{
+						retval |= this->vars[i].loadJsonObj(obj1);
+					}
 				}
 			}
 		}
@@ -1690,19 +2464,33 @@ bool SaveFile::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->user.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool ZoneInstance::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int ZoneInstance::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "AccessorID");
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->accessorID = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1711,6 +2499,12 @@ bool ZoneInstance::loadJsonObj(cyborgbear::JsonVal in) {
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->path = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1720,41 +2514,67 @@ bool ZoneInstance::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->location.loadJsonObj(obj0);
-			}
-		}
-	}
-	return true;
-}
-
-bool World::loadJsonObj(cyborgbear::JsonVal in) {
-	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
-	{
-		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Zones");
-		if (!cyborgbear::isNull(obj0) && cyborgbear::isArray(obj0)) {
-			cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
-			unsigned int size = cyborgbear::arraySize(array0);
-			this->zones.resize(size);
-			for (unsigned int i = 0; i < size; i++) {
-				cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
-				{
-					cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
-					if (cyborgbear::isObj(finalObj)) {
-						this->zones[i].loadJsonObj(obj1);
-					}
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
 				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
-bool ZoneHeader::loadJsonObj(cyborgbear::JsonVal in) {
+unsigned long int World::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
+	{
+		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Zones");
+		if (!cyborgbear::isNull(obj0)) {
+			if (cyborgbear::isArray(obj0)) {
+				cyborgbear::JsonArrayOut array0 = cyborgbear::toArray(obj0);
+				unsigned int size = cyborgbear::arraySize(array0);
+				this->zones.resize(size);
+				for (unsigned int i = 0; i < size; i++) {
+					cyborgbear::JsonValOut obj1 = cyborgbear::arrayRead(array0, i);
+					{
+						cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj1);
+						if (cyborgbear::isObj(finalObj)) {
+							this->zones[i].loadJsonObj(obj1);
+						} else {
+							if (cyborgbear::isNull(obj1)) {
+								retval |= cyborgbear::Error_MissingField;
+							} else {
+								retval |= cyborgbear::Error_TypeMismatch;
+							}
+						}
+					}
+				}
+			} else {
+				retval |= cyborgbear::Error_TypeMismatch | retval;
+			}
+		}
+	}
+	return retval;
+}
+
+unsigned long int ZoneHeader::loadJsonObj(cyborgbear::JsonVal in) {
+	unsigned long int retval = cyborgbear::Error_Ok;
+	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Path");
 		{
 			if (cyborgbear::isString(obj0)) {
 				this->path = cyborgbear::toString(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -1764,10 +2584,16 @@ bool ZoneHeader::loadJsonObj(cyborgbear::JsonVal in) {
 			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
 			if (cyborgbear::isObj(finalObj)) {
 				this->size.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
-	return true;
+	return retval;
 }
 
 cyborgbear::JsonValOut CreatureType::buildJsonObj() {
