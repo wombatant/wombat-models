@@ -7,7 +7,7 @@ enginemodels:
 	cyborgbear -i enginemodels.cy -o enginemodels -lc
 go:
 	cyborgbear -i enginemodels.cy -o models.go -t go
-	go build
+	go build *.go
 liccor:
 	liccor
 clean:
