@@ -1244,6 +1244,32 @@ namespace models {
 
 using cyborgbear::string;
 
+class AnimationSlide: public cyborgbear::Model {
+
+	public:
+
+		AnimationSlide();
+
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
+
+		cyborgbear::JsonValOut buildJsonObj();
+#ifdef CYBORGBEAR_BOOST_ENABLED
+
+		virtual string toBoostBinary();
+
+		virtual void fromBoostBinary(string dat);
+#endif
+		int interval;
+		Image image;
+};
+
+}
+
+
+namespace models {
+
+using cyborgbear::string;
+
 class Animation: public cyborgbear::Model {
 
 	public:
@@ -1259,8 +1285,7 @@ class Animation: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		int interval;
-		std::vector< Image > images;
+		std::vector< AnimationSlide > images;
 };
 
 }
@@ -1358,31 +1383,6 @@ namespace models {
 
 using cyborgbear::string;
 
-class Person: public cyborgbear::Model {
-
-	public:
-
-		Person();
-
-		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
-
-		cyborgbear::JsonValOut buildJsonObj();
-#ifdef CYBORGBEAR_BOOST_ENABLED
-
-		virtual string toBoostBinary();
-
-		virtual void fromBoostBinary(string dat);
-#endif
-		PersonClass personClass;
-};
-
-}
-
-
-namespace models {
-
-using cyborgbear::string;
-
 class TileClass: public cyborgbear::Model {
 
 	public:
@@ -1402,6 +1402,31 @@ class TileClass: public cyborgbear::Model {
 		string import;
 		std::vector< AnimLayer > lowerAnims;
 		std::vector< AnimLayer > upperAnims;
+};
+
+}
+
+
+namespace models {
+
+using cyborgbear::string;
+
+class Person: public cyborgbear::Model {
+
+	public:
+
+		Person();
+
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
+
+		cyborgbear::JsonValOut buildJsonObj();
+#ifdef CYBORGBEAR_BOOST_ENABLED
+
+		virtual string toBoostBinary();
+
+		virtual void fromBoostBinary(string dat);
+#endif
+		PersonClass personClass;
 };
 
 }
@@ -1648,8 +1673,13 @@ void serialize(Archive &ar, models::World &model, const unsigned int) {
 }
 
 template<class Archive>
-void serialize(Archive &ar, models::Animation &model, const unsigned int) {
+void serialize(Archive &ar, models::AnimationSlide &model, const unsigned int) {
 	ar & model.interval;
+	ar & model.image;
+}
+
+template<class Archive>
+void serialize(Archive &ar, models::Animation &model, const unsigned int) {
 	ar & model.images;
 }
 
@@ -1682,16 +1712,16 @@ void serialize(Archive &ar, models::PersonClass &model, const unsigned int) {
 }
 
 template<class Archive>
-void serialize(Archive &ar, models::Person &model, const unsigned int) {
-	ar & model.personClass;
-}
-
-template<class Archive>
 void serialize(Archive &ar, models::TileClass &model, const unsigned int) {
 	ar & model.terrainFlags;
 	ar & model.import;
 	ar & model.lowerAnims;
 	ar & model.upperAnims;
+}
+
+template<class Archive>
+void serialize(Archive &ar, models::Person &model, const unsigned int) {
+	ar & model.personClass;
 }
 
 template<class Archive>
