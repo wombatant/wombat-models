@@ -1596,9 +1596,89 @@ func (me *World) ReadObjFile(path string) error {
 	return nil
 }
 
-type Animation struct {
+type AnimationSlide struct {
 	Interval int
-	Images []Image
+	Image Image
+}
+
+func (me *AnimationSlide) FromJSON(text []byte) error {
+	return json.Unmarshal(text, me)
+}
+
+func (me *AnimationSlide) ReadJSONFile(path string) error {
+	file, err := ioutil.ReadFile(path)
+	if err != nil {
+		 return err
+	}
+	return json.Unmarshal(file, me)
+}
+
+func (me *AnimationSlide) ToJSON() []byte {
+	out, _ := json.Marshal(me)
+	return out
+}
+
+func (me *AnimationSlide) WriteJSONFile(path string) error {
+	out, _ := json.Marshal(me)
+	return ioutil.WriteFile(path, out, 0644)
+}
+
+func (me *AnimationSlide) ToGob() []byte {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	enc.Encode(me)
+	return buf.Bytes()
+}
+
+func (me *AnimationSlide) WriteGobFile(path string) error {
+	out := me.ToGob()
+	return ioutil.WriteFile(path, out, 0644)
+}
+
+func (me *AnimationSlide) FromGob(data []byte) error {
+	var buf bytes.Buffer
+	_, err := buf.Write(data)
+	if err != nil {
+		return err
+	}
+	dec := gob.NewDecoder(&buf)
+	err = dec.Decode(me)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (me *AnimationSlide) ReadGobFile(path string) error {
+	file, err := ioutil.ReadFile(path)
+	if err != nil {
+		 return err
+	}
+	return me.FromGob(file)
+}
+
+func (me *AnimationSlide) ReadObjFile(path string) error {
+	switch path[strings.LastIndex(path, ".")+1:] {
+	case "json":
+		return me.ReadJSONFile(path)
+	case "gob":
+		return me.ReadGobFile(path)
+	default:
+		err := me.ReadGobFile(path+".gob")
+		if err == nil {
+			return nil
+		}
+		err = me.ReadJSONFile(path+".json")
+		if err == nil {
+			return nil
+		}
+		return err
+	}
+	return nil
+}
+
+type Animation struct {
+	Images []AnimationSlide
 }
 
 func (me *Animation) FromJSON(text []byte) error {
@@ -1930,86 +2010,6 @@ func (me *PersonClass) ReadObjFile(path string) error {
 	return nil
 }
 
-type Person struct {
-	PersonClass PersonClass
-}
-
-func (me *Person) FromJSON(text []byte) error {
-	return json.Unmarshal(text, me)
-}
-
-func (me *Person) ReadJSONFile(path string) error {
-	file, err := ioutil.ReadFile(path)
-	if err != nil {
-		 return err
-	}
-	return json.Unmarshal(file, me)
-}
-
-func (me *Person) ToJSON() []byte {
-	out, _ := json.Marshal(me)
-	return out
-}
-
-func (me *Person) WriteJSONFile(path string) error {
-	out, _ := json.Marshal(me)
-	return ioutil.WriteFile(path, out, 0644)
-}
-
-func (me *Person) ToGob() []byte {
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	enc.Encode(me)
-	return buf.Bytes()
-}
-
-func (me *Person) WriteGobFile(path string) error {
-	out := me.ToGob()
-	return ioutil.WriteFile(path, out, 0644)
-}
-
-func (me *Person) FromGob(data []byte) error {
-	var buf bytes.Buffer
-	_, err := buf.Write(data)
-	if err != nil {
-		return err
-	}
-	dec := gob.NewDecoder(&buf)
-	err = dec.Decode(me)
-	if err != nil {
-		return err
-	}
-	return err
-}
-
-func (me *Person) ReadGobFile(path string) error {
-	file, err := ioutil.ReadFile(path)
-	if err != nil {
-		 return err
-	}
-	return me.FromGob(file)
-}
-
-func (me *Person) ReadObjFile(path string) error {
-	switch path[strings.LastIndex(path, ".")+1:] {
-	case "json":
-		return me.ReadJSONFile(path)
-	case "gob":
-		return me.ReadGobFile(path)
-	default:
-		err := me.ReadGobFile(path+".gob")
-		if err == nil {
-			return nil
-		}
-		err = me.ReadJSONFile(path+".json")
-		if err == nil {
-			return nil
-		}
-		return err
-	}
-	return nil
-}
-
 type TileClass struct {
 	TerrainFlags int
 	Import string
@@ -2074,6 +2074,86 @@ func (me *TileClass) ReadGobFile(path string) error {
 }
 
 func (me *TileClass) ReadObjFile(path string) error {
+	switch path[strings.LastIndex(path, ".")+1:] {
+	case "json":
+		return me.ReadJSONFile(path)
+	case "gob":
+		return me.ReadGobFile(path)
+	default:
+		err := me.ReadGobFile(path+".gob")
+		if err == nil {
+			return nil
+		}
+		err = me.ReadJSONFile(path+".json")
+		if err == nil {
+			return nil
+		}
+		return err
+	}
+	return nil
+}
+
+type Person struct {
+	PersonClass PersonClass
+}
+
+func (me *Person) FromJSON(text []byte) error {
+	return json.Unmarshal(text, me)
+}
+
+func (me *Person) ReadJSONFile(path string) error {
+	file, err := ioutil.ReadFile(path)
+	if err != nil {
+		 return err
+	}
+	return json.Unmarshal(file, me)
+}
+
+func (me *Person) ToJSON() []byte {
+	out, _ := json.Marshal(me)
+	return out
+}
+
+func (me *Person) WriteJSONFile(path string) error {
+	out, _ := json.Marshal(me)
+	return ioutil.WriteFile(path, out, 0644)
+}
+
+func (me *Person) ToGob() []byte {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	enc.Encode(me)
+	return buf.Bytes()
+}
+
+func (me *Person) WriteGobFile(path string) error {
+	out := me.ToGob()
+	return ioutil.WriteFile(path, out, 0644)
+}
+
+func (me *Person) FromGob(data []byte) error {
+	var buf bytes.Buffer
+	_, err := buf.Write(data)
+	if err != nil {
+		return err
+	}
+	dec := gob.NewDecoder(&buf)
+	err = dec.Decode(me)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (me *Person) ReadGobFile(path string) error {
+	file, err := ioutil.ReadFile(path)
+	if err != nil {
+		 return err
+	}
+	return me.FromGob(file)
+}
+
+func (me *Person) ReadObjFile(path string) error {
 	switch path[strings.LastIndex(path, ".")+1:] {
 	case "json":
 		return me.ReadJSONFile(path)

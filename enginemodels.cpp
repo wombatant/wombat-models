@@ -341,8 +341,11 @@ Image::Image() {
 World::World() {
 }
 
-Animation::Animation() {
+AnimationSlide::AnimationSlide() {
 	this->interval = 0;
+}
+
+Animation::Animation() {
 }
 
 AnimLayer::AnimLayer() {
@@ -357,12 +360,12 @@ PersonClass::PersonClass() {
 	this->iD = 0;
 }
 
-Person::Person() {
-}
-
 TileClass::TileClass() {
 	this->terrainFlags = 0;
 	this->import = "";
+}
+
+Person::Person() {
 }
 
 Sprite::Sprite() {
@@ -1666,7 +1669,7 @@ cyborgbear::Error World::loadJsonObj(cyborgbear::JsonVal in) {
 	return retval;
 }
 
-cyborgbear::Error Animation::loadJsonObj(cyborgbear::JsonVal in) {
+cyborgbear::Error AnimationSlide::loadJsonObj(cyborgbear::JsonVal in) {
 	cyborgbear::Error retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
 
@@ -1684,6 +1687,28 @@ cyborgbear::Error Animation::loadJsonObj(cyborgbear::JsonVal in) {
 			}
 		}
 	}
+	{
+		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Image");
+		{
+			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
+			if (cyborgbear::isObj(finalObj)) {
+				retval |= this->image.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
+			}
+		}
+	}
+	return retval;
+}
+
+cyborgbear::Error Animation::loadJsonObj(cyborgbear::JsonVal in) {
+	cyborgbear::Error retval = cyborgbear::Error_Ok;
+	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Images");
 		if (!cyborgbear::isNull(obj0)) {
@@ -2063,28 +2088,6 @@ cyborgbear::Error PersonClass::loadJsonObj(cyborgbear::JsonVal in) {
 	return retval;
 }
 
-cyborgbear::Error Person::loadJsonObj(cyborgbear::JsonVal in) {
-	cyborgbear::Error retval = cyborgbear::Error_Ok;
-	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
-
-	{
-		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "PersonClass");
-		{
-			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
-			if (cyborgbear::isObj(finalObj)) {
-				retval |= this->personClass.loadJsonObj(obj0);
-			} else {
-				if (cyborgbear::isNull(obj0)) {
-					retval |= cyborgbear::Error_MissingField;
-				} else {
-					retval |= cyborgbear::Error_TypeMismatch;
-				}
-			}
-		}
-	}
-	return retval;
-}
-
 cyborgbear::Error TileClass::loadJsonObj(cyborgbear::JsonVal in) {
 	cyborgbear::Error retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
@@ -2168,6 +2171,28 @@ cyborgbear::Error TileClass::loadJsonObj(cyborgbear::JsonVal in) {
 				}
 			} else {
 				retval |= cyborgbear::Error_TypeMismatch;
+			}
+		}
+	}
+	return retval;
+}
+
+cyborgbear::Error Person::loadJsonObj(cyborgbear::JsonVal in) {
+	cyborgbear::Error retval = cyborgbear::Error_Ok;
+	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
+
+	{
+		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "PersonClass");
+		{
+			cyborgbear::JsonValOut finalObj = cyborgbear::toObj(obj0);
+			if (cyborgbear::isObj(finalObj)) {
+				retval |= this->personClass.loadJsonObj(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
 			}
 		}
 	}
@@ -2998,13 +3023,24 @@ cyborgbear::JsonValOut World::buildJsonObj() {
 	return obj;
 }
 
-cyborgbear::JsonValOut Animation::buildJsonObj() {
+cyborgbear::JsonValOut AnimationSlide::buildJsonObj() {
 	cyborgbear::JsonObjOut obj = cyborgbear::newJsonObj();
 	{
 		cyborgbear::JsonValOut out0 = cyborgbear::toJsonVal(this->interval);
 		cyborgbear::objSet(obj, "Interval", out0);
 		cyborgbear::decref(out0);
 	}
+	{
+		cyborgbear::JsonValOut obj0 = this->image.buildJsonObj();
+		cyborgbear::JsonValOut out0 = obj0;
+		cyborgbear::objSet(obj, "Image", out0);
+		cyborgbear::decref(out0);
+	}
+	return obj;
+}
+
+cyborgbear::JsonValOut Animation::buildJsonObj() {
+	cyborgbear::JsonObjOut obj = cyborgbear::newJsonObj();
 	{
 		cyborgbear::JsonArrayOut out1 = cyborgbear::newJsonArray();
 		for (cyborgbear::VectorIterator i = 0; i < this->images.size(); i++) {
@@ -3174,17 +3210,6 @@ cyborgbear::JsonValOut PersonClass::buildJsonObj() {
 	return obj;
 }
 
-cyborgbear::JsonValOut Person::buildJsonObj() {
-	cyborgbear::JsonObjOut obj = cyborgbear::newJsonObj();
-	{
-		cyborgbear::JsonValOut obj0 = this->personClass.buildJsonObj();
-		cyborgbear::JsonValOut out0 = obj0;
-		cyborgbear::objSet(obj, "PersonClass", out0);
-		cyborgbear::decref(out0);
-	}
-	return obj;
-}
-
 cyborgbear::JsonValOut TileClass::buildJsonObj() {
 	cyborgbear::JsonObjOut obj = cyborgbear::newJsonObj();
 	{
@@ -3218,6 +3243,17 @@ cyborgbear::JsonValOut TileClass::buildJsonObj() {
 		}
 		cyborgbear::objSet(obj, "UpperAnims", out1);
 		cyborgbear::decref(out1);
+	}
+	return obj;
+}
+
+cyborgbear::JsonValOut Person::buildJsonObj() {
+	cyborgbear::JsonObjOut obj = cyborgbear::newJsonObj();
+	{
+		cyborgbear::JsonValOut obj0 = this->personClass.buildJsonObj();
+		cyborgbear::JsonValOut out0 = obj0;
+		cyborgbear::objSet(obj, "PersonClass", out0);
+		cyborgbear::decref(out0);
 	}
 	return obj;
 }
@@ -3810,6 +3846,31 @@ string World::toBoostBinary() {
 namespace models {
 
 #ifdef CYBORGBEAR_BOOST_ENABLED
+void AnimationSlide::fromBoostBinary(string dat) {
+	std::stringstream in(dat);
+	boost::archive::binary_iarchive ia(in);
+	ia >> *this;
+}
+
+string AnimationSlide::toBoostBinary() {
+	std::stringstream out;
+	{
+		boost::archive::binary_oarchive oa(out);
+		oa << *this;
+	}
+
+	string str;
+	while (out.good())
+		str += out.get();
+
+	return str;
+}
+#endif
+}
+
+namespace models {
+
+#ifdef CYBORGBEAR_BOOST_ENABLED
 void Animation::fromBoostBinary(string dat) {
 	std::stringstream in(dat);
 	boost::archive::binary_iarchive ia(in);
@@ -3910,13 +3971,13 @@ string PersonClass::toBoostBinary() {
 namespace models {
 
 #ifdef CYBORGBEAR_BOOST_ENABLED
-void Person::fromBoostBinary(string dat) {
+void TileClass::fromBoostBinary(string dat) {
 	std::stringstream in(dat);
 	boost::archive::binary_iarchive ia(in);
 	ia >> *this;
 }
 
-string Person::toBoostBinary() {
+string TileClass::toBoostBinary() {
 	std::stringstream out;
 	{
 		boost::archive::binary_oarchive oa(out);
@@ -3935,13 +3996,13 @@ string Person::toBoostBinary() {
 namespace models {
 
 #ifdef CYBORGBEAR_BOOST_ENABLED
-void TileClass::fromBoostBinary(string dat) {
+void Person::fromBoostBinary(string dat) {
 	std::stringstream in(dat);
 	boost::archive::binary_iarchive ia(in);
 	ia >> *this;
 }
 
-string TileClass::toBoostBinary() {
+string Person::toBoostBinary() {
 	std::stringstream out;
 	{
 		boost::archive::binary_oarchive oa(out);

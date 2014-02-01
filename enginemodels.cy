@@ -1,6 +1,9 @@
 Animation
+	Images []AnimationSlide
+
+AnimationSlide
 	Interval int
-	Images   []Image
+	Image    Image
 
 AnimLayer
 	Point     Point

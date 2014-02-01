@@ -1,7 +1,7 @@
 all: enginemodels editormodels go liccor
 editormodels:
 	cat enginemodels.cy editormodels.cy > models.cy
-	cyborgbear -i models.cy -o editormodels -lc -t cpp-qt
+	cyborgbear -i models.cy -o editormodels -t cpp-qt
 	rm -f models.cy
 enginemodels:
 	cyborgbear -i enginemodels.cy -o enginemodels -lc
