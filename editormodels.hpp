@@ -50,11 +50,12 @@ namespace models {
 
 namespace cyborgbear {
 
-const unsigned long int Error_Ok = 0;
-const unsigned long int Error_TypeMismatch = 1;
-const unsigned long int Error_MissingField = 2;
-const unsigned long int Error_CouldNotAccessFile = 4;
-const unsigned long int Error_GenericParsingError = 8;
+typedef unsigned long int Error;
+const Error Error_Ok = 0;
+const Error Error_TypeMismatch = 1;
+const Error Error_MissingField = 2;
+const Error Error_CouldNotAccessFile = 4;
+const Error Error_GenericParsingError = 8;
 
 enum JsonSerializationSettings {
 	Compact = 0,
@@ -104,6 +105,11 @@ typedef std::string string;
 
 typedef unsigned VectorIterator;
 #endif
+
+/**
+ * Version of cyborgbear.
+ */
+extern string version;
 
 //string ops
 std::string toStdString(string str);
@@ -186,11 +192,13 @@ inline std::string toStdString(string str) {
 }
 
 inline const char* toCString(std::string str) {
-	return str.c_str();
+	const char *out = str.c_str();
+	return out;
 }
 
 inline const char* toCString(string str) {
-	return toStdString(str).c_str();
+	const char *out = toStdString(str).c_str();
+	return out;
 }
 
 inline string toString(std::string str) {
@@ -438,7 +446,8 @@ inline std::string toStdString(string str) {
 }
 
 inline const char* toCString(string str) {
-	return str.c_str();
+	const char *out = str.c_str();
+	return out;
 }
 
 
@@ -633,11 +642,11 @@ class Model {
 #endif
 
 #ifdef CYBORGBEAR_USING_QT
-		unsigned long int loadJsonObj(cyborgbear::JsonObjIteratorVal &obj) { return loadJsonObj(obj); };
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonObjIteratorVal &obj) { return loadJsonObj(obj); };
 #endif
 	protected:
 		virtual cyborgbear::JsonValOut buildJsonObj() = 0;
-		virtual unsigned long int loadJsonObj(cyborgbear::JsonVal obj) = 0;
+		virtual cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj) = 0;
 };
 
 class unknown: public Model {
@@ -664,7 +673,7 @@ class unknown: public Model {
 		virtual ~unknown();
 
 		bool loaded();
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 		cyborgbear::JsonValOut buildJsonObj();
 
 		bool toBool();
@@ -714,7 +723,7 @@ class CreatureType: public cyborgbear::Model {
 
 		CreatureType();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -742,7 +751,7 @@ class StatusEffect: public cyborgbear::Model {
 
 		StatusEffect();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -768,7 +777,7 @@ class Fraction: public cyborgbear::Model {
 
 		Fraction();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -794,7 +803,7 @@ class ModelFile: public cyborgbear::Model {
 
 		ModelFile();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -819,7 +828,7 @@ class Point: public cyborgbear::Model {
 
 		Point();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -845,7 +854,7 @@ class Size: public cyborgbear::Model {
 
 		Size();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -871,7 +880,7 @@ class Bounds: public cyborgbear::Model {
 
 		Bounds();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -899,7 +908,7 @@ class SaveVariables: public cyborgbear::Model {
 
 		SaveVariables();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -924,7 +933,7 @@ class SpriteSheetImage: public cyborgbear::Model {
 
 		SpriteSheetImage();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -933,7 +942,7 @@ class SpriteSheetImage: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		Bounds srcBounds;
+		models::Bounds srcBounds;
 };
 
 }
@@ -949,7 +958,7 @@ class SpriteSheet: public cyborgbear::Model {
 
 		SpriteSheet();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -963,7 +972,7 @@ class SpriteSheet: public cyborgbear::Model {
 		int tileWidth;
 		int tileHeight;
 		string srcFile;
-		QMap< int, SpriteSheetImage > images;
+		QMap< int, models::SpriteSheetImage > images;
 		int imageIdIterator;
 		QVector< int > recycledImageIds;
 };
@@ -981,7 +990,7 @@ class Image: public cyborgbear::Model {
 
 		Image();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -992,7 +1001,7 @@ class Image: public cyborgbear::Model {
 #endif
 		string spriteSheet;
 		int imgId;
-		Size defaultSize;
+		models::Size defaultSize;
 };
 
 }
@@ -1008,7 +1017,7 @@ class Animation: public cyborgbear::Model {
 
 		Animation();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1018,7 +1027,7 @@ class Animation: public cyborgbear::Model {
 		virtual void fromBoostBinary(string dat);
 #endif
 		int interval;
-		QVector< Image > images;
+		QVector< models::Image > images;
 };
 
 }
@@ -1034,7 +1043,7 @@ class AnimLayer: public cyborgbear::Model {
 
 		AnimLayer();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1043,8 +1052,8 @@ class AnimLayer: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		Point point;
-		Animation animation;
+		models::Point point;
+		models::Animation animation;
 };
 
 }
@@ -1060,7 +1069,7 @@ class CreatureClass: public cyborgbear::Model {
 
 		CreatureClass();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1075,8 +1084,8 @@ class CreatureClass: public cyborgbear::Model {
 		QVector< string > types;
 		QVector< string > canLearn;
 		QMap< int, string > learnsAtLevel;
-		Animation frontView;
-		Animation backView;
+		models::Animation frontView;
+		models::Animation backView;
 };
 
 }
@@ -1092,7 +1101,7 @@ class CreatureMove: public cyborgbear::Model {
 
 		CreatureMove();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1106,11 +1115,11 @@ class CreatureMove: public cyborgbear::Model {
 		int power;
 		bool requiresRegarge;
 		string script;
-		StatusEffect burn;
-		StatusEffect freeze;
-		StatusEffect paralyze;
-		StatusEffect poison;
-		StatusEffect sleep;
+		models::StatusEffect burn;
+		models::StatusEffect freeze;
+		models::StatusEffect paralyze;
+		models::StatusEffect poison;
+		models::StatusEffect sleep;
 };
 
 }
@@ -1126,7 +1135,7 @@ class CreatureMoveInstance: public cyborgbear::Model {
 
 		CreatureMoveInstance();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1136,7 +1145,7 @@ class CreatureMoveInstance: public cyborgbear::Model {
 		virtual void fromBoostBinary(string dat);
 #endif
 		int creatureMove;
-		Fraction pP;
+		models::Fraction pP;
 };
 
 }
@@ -1152,7 +1161,7 @@ class Creature: public cyborgbear::Model {
 
 		Creature();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1166,7 +1175,7 @@ class Creature: public cyborgbear::Model {
 		string creatureClass;
 		bool male;
 		int level;
-		Fraction health;
+		models::Fraction health;
 		int attack;
 		int specAttack;
 		int defense;
@@ -1175,7 +1184,7 @@ class Creature: public cyborgbear::Model {
 		bool frozen;
 		bool poisoned;
 		bool asleep;
-		QVector< CreatureMoveInstance > moves;
+		QVector< models::CreatureMoveInstance > moves;
 };
 
 }
@@ -1191,7 +1200,7 @@ class EditorDockSettings: public cyborgbear::Model {
 
 		EditorDockSettings();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1202,7 +1211,7 @@ class EditorDockSettings: public cyborgbear::Model {
 #endif
 		bool docked;
 		bool visible;
-		Bounds undocked;
+		models::Bounds undocked;
 };
 
 }
@@ -1218,7 +1227,7 @@ class User: public cyborgbear::Model {
 
 		User();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1248,7 +1257,7 @@ class PersonClass: public cyborgbear::Model {
 
 		PersonClass();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1260,9 +1269,9 @@ class PersonClass: public cyborgbear::Model {
 		int iD;
 		QMap< string, string > name;
 		QVector< int > creatures;
-		QVector< Animation > overhead;
-		Animation frontView;
-		Animation backView;
+		QVector< models::Animation > overhead;
+		models::Animation frontView;
+		models::Animation backView;
 };
 
 }
@@ -1278,7 +1287,7 @@ class Sprite: public cyborgbear::Model {
 
 		Sprite();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1287,7 +1296,7 @@ class Sprite: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		QVector< QVector< AnimLayer > > animLayers;
+		QVector< QVector< models::AnimLayer > > animLayers;
 		int spriteType;
 		int personID;
 		int speed;
@@ -1309,7 +1318,7 @@ class TileClass: public cyborgbear::Model {
 
 		TileClass();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1320,8 +1329,8 @@ class TileClass: public cyborgbear::Model {
 #endif
 		int terrainFlags;
 		string import;
-		QVector< AnimLayer > lowerAnims;
-		QVector< AnimLayer > upperAnims;
+		QVector< models::AnimLayer > lowerAnims;
+		QVector< models::AnimLayer > upperAnims;
 };
 
 }
@@ -1337,7 +1346,7 @@ class EditorSettings: public cyborgbear::Model {
 
 		EditorSettings();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1346,7 +1355,7 @@ class EditorSettings: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		QMap< string, EditorDockSettings > dockBounds;
+		QMap< string, models::EditorDockSettings > dockBounds;
 		string openProject;
 		QVector< string > openFiles;
 		int openTab;
@@ -1365,7 +1374,7 @@ class Tile: public cyborgbear::Model {
 
 		Tile();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1374,8 +1383,8 @@ class Tile: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		TileClass tileClass;
-		Sprite occupant;
+		models::TileClass tileClass;
+		models::Sprite occupant;
 };
 
 }
@@ -1391,7 +1400,7 @@ class Zone: public cyborgbear::Model {
 
 		Zone();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1400,9 +1409,9 @@ class Zone: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		QVector< QVector< QVector< Tile > > > tiles;
+		QVector< QVector< QVector< models::Tile > > > tiles;
 		QVector< string > initScripts;
-		Point location;
+		models::Point location;
 };
 
 }
@@ -1418,7 +1427,7 @@ class Person: public cyborgbear::Model {
 
 		Person();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1427,7 +1436,7 @@ class Person: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		PersonClass personClass;
+		models::PersonClass personClass;
 };
 
 }
@@ -1443,7 +1452,7 @@ class SaveFile: public cyborgbear::Model {
 
 		SaveFile();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1453,7 +1462,7 @@ class SaveFile: public cyborgbear::Model {
 		virtual void fromBoostBinary(string dat);
 #endif
 		QMap< string, cyborgbear::unknown > vars;
-		User user;
+		models::User user;
 };
 
 }
@@ -1469,7 +1478,7 @@ class ZoneInstance: public cyborgbear::Model {
 
 		ZoneInstance();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1480,7 +1489,7 @@ class ZoneInstance: public cyborgbear::Model {
 #endif
 		string accessorID;
 		string path;
-		Point location;
+		models::Point location;
 };
 
 }
@@ -1496,7 +1505,7 @@ class World: public cyborgbear::Model {
 
 		World();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1505,7 +1514,7 @@ class World: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		QVector< ZoneInstance > zones;
+		QVector< models::ZoneInstance > zones;
 };
 
 }
@@ -1521,7 +1530,7 @@ class ZoneHeader: public cyborgbear::Model {
 
 		ZoneHeader();
 
-		unsigned long int loadJsonObj(cyborgbear::JsonVal obj);
+		cyborgbear::Error loadJsonObj(cyborgbear::JsonVal obj);
 
 		cyborgbear::JsonValOut buildJsonObj();
 #ifdef CYBORGBEAR_BOOST_ENABLED
@@ -1531,7 +1540,7 @@ class ZoneHeader: public cyborgbear::Model {
 		virtual void fromBoostBinary(string dat);
 #endif
 		string path;
-		Size size;
+		models::Size size;
 };
 
 }
