@@ -113,7 +113,6 @@ extern string version;
 
 //string ops
 std::string toStdString(string str);
-const char* toCString(string str);
 
 
 JsonObjOut read(string json);
@@ -189,16 +188,6 @@ inline string toString(string str) {
 //string conversions
 inline std::string toStdString(string str) {
 	return str.toStdString();
-}
-
-inline const char* toCString(std::string str) {
-	const char *out = str.c_str();
-	return out;
-}
-
-inline const char* toCString(string str) {
-	const char *out = toStdString(str).c_str();
-	return out;
 }
 
 inline string toString(std::string str) {
@@ -443,11 +432,6 @@ inline string write(JsonObj obj, JsonSerializationSettings sttngs) {
 
 inline std::string toStdString(string str) {
 	return str;
-}
-
-inline const char* toCString(string str) {
-	const char *out = str.c_str();
-	return out;
 }
 
 
@@ -732,10 +716,10 @@ class CreatureType: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		std::map< string, string > name;
-		bool special;
-		std::vector< string > strongAgainst;
-		std::vector< string > weakAgainst;
+		std::map< string, string > Name;
+		bool Special;
+		std::vector< string > StrongAgainst;
+		std::vector< string > WeakAgainst;
 };
 
 }
@@ -760,8 +744,8 @@ class StatusEffect: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		int attackerEffect;
-		int enemyEffect;
+		int AttackerEffect;
+		int EnemyEffect;
 };
 
 }
@@ -786,8 +770,8 @@ class Fraction: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		int current;
-		int available;
+		int Current;
+		int Available;
 };
 
 }
@@ -812,7 +796,7 @@ class ModelFile: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		string type;
+		string Type;
 };
 
 }
@@ -837,8 +821,8 @@ class Point: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		int x;
-		int y;
+		int X;
+		int Y;
 };
 
 }
@@ -863,8 +847,8 @@ class Size: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		int width;
-		int height;
+		int Width;
+		int Height;
 };
 
 }
@@ -889,10 +873,10 @@ class Bounds: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		int x;
-		int y;
-		int width;
-		int height;
+		int X;
+		int Y;
+		int Width;
+		int Height;
 };
 
 }
@@ -917,7 +901,7 @@ class SaveVariables: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		std::map< string, cyborgbear::unknown > vars;
+		std::map< string, cyborgbear::unknown > Vars;
 };
 
 }
@@ -942,7 +926,7 @@ class SpriteSheetImage: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		Bounds srcBounds;
+		models::Bounds SrcBounds;
 };
 
 }
@@ -967,14 +951,14 @@ class SpriteSheet: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		int tilesWide;
-		int tilesHigh;
-		int tileWidth;
-		int tileHeight;
-		string srcFile;
-		std::map< int, SpriteSheetImage > images;
-		int imageIdIterator;
-		std::vector< int > recycledImageIds;
+		int TilesWide;
+		int TilesHigh;
+		int TileWidth;
+		int TileHeight;
+		string SrcFile;
+		std::map< int, models::SpriteSheetImage > Images;
+		int ImageIdIterator;
+		std::vector< int > RecycledImageIds;
 };
 
 }
@@ -999,16 +983,16 @@ class CreatureMove: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		std::map< string, string > name;
-		string type;
-		int power;
-		bool requiresRegarge;
-		string script;
-		StatusEffect burn;
-		StatusEffect freeze;
-		StatusEffect paralyze;
-		StatusEffect poison;
-		StatusEffect sleep;
+		std::map< string, string > Name;
+		string Type;
+		int Power;
+		bool RequiresRegarge;
+		string Script;
+		models::StatusEffect Burn;
+		models::StatusEffect Freeze;
+		models::StatusEffect Paralyze;
+		models::StatusEffect Poison;
+		models::StatusEffect Sleep;
 };
 
 }
@@ -1033,8 +1017,8 @@ class CreatureMoveInstance: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		int creatureMove;
-		Fraction pP;
+		int CreatureMove;
+		models::Fraction PP;
 };
 
 }
@@ -1059,21 +1043,21 @@ class Creature: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		int iD;
-		std::map< string, string > name;
-		string creatureClass;
-		bool male;
-		int level;
-		Fraction health;
-		int attack;
-		int specAttack;
-		int defense;
-		int specDefense;
-		bool burned;
-		bool frozen;
-		bool poisoned;
-		bool asleep;
-		std::vector< CreatureMoveInstance > moves;
+		int ID;
+		std::map< string, string > Name;
+		string CreatureClass;
+		bool Male;
+		int Level;
+		models::Fraction Health;
+		int Attack;
+		int SpecAttack;
+		int Defense;
+		int SpecDefense;
+		bool Burned;
+		bool Frozen;
+		bool Poisoned;
+		bool Asleep;
+		std::vector< models::CreatureMoveInstance > Moves;
 };
 
 }
@@ -1098,12 +1082,12 @@ class User: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		int personID;
-		string world;
-		string zone;
-		int xAddress;
-		int yAddress;
-		int layer;
+		int PersonID;
+		string World;
+		string Zone;
+		int XAddress;
+		int YAddress;
+		int Layer;
 };
 
 }
@@ -1128,9 +1112,9 @@ class ZoneInstance: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		string accessorID;
-		string path;
-		Point location;
+		string AccessorID;
+		string Path;
+		models::Point Location;
 };
 
 }
@@ -1155,8 +1139,8 @@ class ZoneHeader: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		string path;
-		Size size;
+		string Path;
+		models::Size Size;
 };
 
 }
@@ -1181,8 +1165,8 @@ class SaveFile: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		std::map< string, cyborgbear::unknown > vars;
-		User user;
+		std::map< string, cyborgbear::unknown > Vars;
+		models::User User;
 };
 
 }
@@ -1207,9 +1191,9 @@ class Image: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		string spriteSheet;
-		int imgId;
-		Size defaultSize;
+		string SpriteSheet;
+		int ImgId;
+		models::Size DefaultSize;
 };
 
 }
@@ -1234,7 +1218,7 @@ class World: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		std::vector< ZoneInstance > zones;
+		std::vector< models::ZoneInstance > Zones;
 };
 
 }
@@ -1259,8 +1243,8 @@ class AnimationSlide: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		int interval;
-		Image image;
+		int Interval;
+		models::Image Image;
 };
 
 }
@@ -1285,7 +1269,7 @@ class Animation: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		std::vector< AnimationSlide > images;
+		std::vector< models::AnimationSlide > Images;
 };
 
 }
@@ -1310,8 +1294,8 @@ class AnimLayer: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		Point point;
-		Animation animation;
+		models::Point Point;
+		models::Animation Animation;
 };
 
 }
@@ -1336,14 +1320,14 @@ class CreatureClass: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		std::map< string, string > name;
-		string successor;
-		string predecessor;
-		std::vector< string > types;
-		std::vector< string > canLearn;
-		std::map< int, string > learnsAtLevel;
-		Animation frontView;
-		Animation backView;
+		std::map< string, string > Name;
+		string Successor;
+		string Predecessor;
+		std::vector< string > Types;
+		std::vector< string > CanLearn;
+		std::map< int, string > LearnsAtLevel;
+		models::Animation FrontView;
+		models::Animation BackView;
 };
 
 }
@@ -1368,12 +1352,12 @@ class PersonClass: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		int iD;
-		std::map< string, string > name;
-		std::vector< int > creatures;
-		std::vector< Animation > overhead;
-		Animation frontView;
-		Animation backView;
+		int ID;
+		std::map< string, string > Name;
+		std::vector< int > Creatures;
+		std::vector< models::Animation > Overhead;
+		models::Animation FrontView;
+		models::Animation BackView;
 };
 
 }
@@ -1398,10 +1382,10 @@ class TileClass: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		int terrainFlags;
-		string import;
-		std::vector< AnimLayer > lowerAnims;
-		std::vector< AnimLayer > upperAnims;
+		int TerrainFlags;
+		string Import;
+		std::vector< models::AnimLayer > LowerAnims;
+		std::vector< models::AnimLayer > UpperAnims;
 };
 
 }
@@ -1426,7 +1410,7 @@ class Person: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		PersonClass personClass;
+		models::PersonClass PersonClass;
 };
 
 }
@@ -1451,13 +1435,13 @@ class Sprite: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		std::vector< std::vector< AnimLayer > > animLayers;
-		int spriteType;
-		int personID;
-		int speed;
-		string name;
-		string path;
-		string scriptPath;
+		std::vector< std::vector< models::AnimLayer > > AnimLayers;
+		int SpriteType;
+		int PersonID;
+		int Speed;
+		string Name;
+		string Path;
+		string ScriptPath;
 };
 
 }
@@ -1482,8 +1466,8 @@ class Tile: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		TileClass tileClass;
-		Sprite occupant;
+		models::TileClass TileClass;
+		models::Sprite Occupant;
 };
 
 }
@@ -1508,9 +1492,9 @@ class Zone: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		std::vector< std::vector< std::vector< Tile > > > tiles;
-		std::vector< string > initScripts;
-		Point location;
+		std::vector< std::vector< std::vector< models::Tile > > > Tiles;
+		std::vector< string > InitScripts;
+		models::Point Location;
 };
 
 }
@@ -1527,225 +1511,225 @@ namespace serialization {
 
 template<class Archive>
 void serialize(Archive &ar, models::CreatureType &model, const unsigned int) {
-	ar & model.name;
-	ar & model.special;
-	ar & model.strongAgainst;
-	ar & model.weakAgainst;
+	ar & model.Name;
+	ar & model.Special;
+	ar & model.StrongAgainst;
+	ar & model.WeakAgainst;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::StatusEffect &model, const unsigned int) {
-	ar & model.attackerEffect;
-	ar & model.enemyEffect;
+	ar & model.AttackerEffect;
+	ar & model.EnemyEffect;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::Fraction &model, const unsigned int) {
-	ar & model.current;
-	ar & model.available;
+	ar & model.Current;
+	ar & model.Available;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::ModelFile &model, const unsigned int) {
-	ar & model.type;
+	ar & model.Type;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::Point &model, const unsigned int) {
-	ar & model.x;
-	ar & model.y;
+	ar & model.X;
+	ar & model.Y;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::Size &model, const unsigned int) {
-	ar & model.width;
-	ar & model.height;
+	ar & model.Width;
+	ar & model.Height;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::Bounds &model, const unsigned int) {
-	ar & model.x;
-	ar & model.y;
-	ar & model.width;
-	ar & model.height;
+	ar & model.X;
+	ar & model.Y;
+	ar & model.Width;
+	ar & model.Height;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::SaveVariables &model, const unsigned int) {
-	ar & model.vars;
+	ar & model.Vars;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::SpriteSheetImage &model, const unsigned int) {
-	ar & model.srcBounds;
+	ar & model.SrcBounds;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::SpriteSheet &model, const unsigned int) {
-	ar & model.tilesWide;
-	ar & model.tilesHigh;
-	ar & model.tileWidth;
-	ar & model.tileHeight;
-	ar & model.srcFile;
-	ar & model.images;
-	ar & model.imageIdIterator;
-	ar & model.recycledImageIds;
+	ar & model.TilesWide;
+	ar & model.TilesHigh;
+	ar & model.TileWidth;
+	ar & model.TileHeight;
+	ar & model.SrcFile;
+	ar & model.Images;
+	ar & model.ImageIdIterator;
+	ar & model.RecycledImageIds;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::CreatureMove &model, const unsigned int) {
-	ar & model.name;
-	ar & model.type;
-	ar & model.power;
-	ar & model.requiresRegarge;
-	ar & model.script;
-	ar & model.burn;
-	ar & model.freeze;
-	ar & model.paralyze;
-	ar & model.poison;
-	ar & model.sleep;
+	ar & model.Name;
+	ar & model.Type;
+	ar & model.Power;
+	ar & model.RequiresRegarge;
+	ar & model.Script;
+	ar & model.Burn;
+	ar & model.Freeze;
+	ar & model.Paralyze;
+	ar & model.Poison;
+	ar & model.Sleep;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::CreatureMoveInstance &model, const unsigned int) {
-	ar & model.creatureMove;
-	ar & model.pP;
+	ar & model.CreatureMove;
+	ar & model.PP;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::Creature &model, const unsigned int) {
-	ar & model.iD;
-	ar & model.name;
-	ar & model.creatureClass;
-	ar & model.male;
-	ar & model.level;
-	ar & model.health;
-	ar & model.attack;
-	ar & model.specAttack;
-	ar & model.defense;
-	ar & model.specDefense;
-	ar & model.burned;
-	ar & model.frozen;
-	ar & model.poisoned;
-	ar & model.asleep;
-	ar & model.moves;
+	ar & model.ID;
+	ar & model.Name;
+	ar & model.CreatureClass;
+	ar & model.Male;
+	ar & model.Level;
+	ar & model.Health;
+	ar & model.Attack;
+	ar & model.SpecAttack;
+	ar & model.Defense;
+	ar & model.SpecDefense;
+	ar & model.Burned;
+	ar & model.Frozen;
+	ar & model.Poisoned;
+	ar & model.Asleep;
+	ar & model.Moves;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::User &model, const unsigned int) {
-	ar & model.personID;
-	ar & model.world;
-	ar & model.zone;
-	ar & model.xAddress;
-	ar & model.yAddress;
-	ar & model.layer;
+	ar & model.PersonID;
+	ar & model.World;
+	ar & model.Zone;
+	ar & model.XAddress;
+	ar & model.YAddress;
+	ar & model.Layer;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::ZoneInstance &model, const unsigned int) {
-	ar & model.accessorID;
-	ar & model.path;
-	ar & model.location;
+	ar & model.AccessorID;
+	ar & model.Path;
+	ar & model.Location;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::ZoneHeader &model, const unsigned int) {
-	ar & model.path;
-	ar & model.size;
+	ar & model.Path;
+	ar & model.Size;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::SaveFile &model, const unsigned int) {
-	ar & model.vars;
-	ar & model.user;
+	ar & model.Vars;
+	ar & model.User;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::Image &model, const unsigned int) {
-	ar & model.spriteSheet;
-	ar & model.imgId;
-	ar & model.defaultSize;
+	ar & model.SpriteSheet;
+	ar & model.ImgId;
+	ar & model.DefaultSize;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::World &model, const unsigned int) {
-	ar & model.zones;
+	ar & model.Zones;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::AnimationSlide &model, const unsigned int) {
-	ar & model.interval;
-	ar & model.image;
+	ar & model.Interval;
+	ar & model.Image;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::Animation &model, const unsigned int) {
-	ar & model.images;
+	ar & model.Images;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::AnimLayer &model, const unsigned int) {
-	ar & model.point;
-	ar & model.animation;
+	ar & model.Point;
+	ar & model.Animation;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::CreatureClass &model, const unsigned int) {
-	ar & model.name;
-	ar & model.successor;
-	ar & model.predecessor;
-	ar & model.types;
-	ar & model.canLearn;
-	ar & model.learnsAtLevel;
-	ar & model.frontView;
-	ar & model.backView;
+	ar & model.Name;
+	ar & model.Successor;
+	ar & model.Predecessor;
+	ar & model.Types;
+	ar & model.CanLearn;
+	ar & model.LearnsAtLevel;
+	ar & model.FrontView;
+	ar & model.BackView;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::PersonClass &model, const unsigned int) {
-	ar & model.iD;
-	ar & model.name;
-	ar & model.creatures;
-	ar & model.overhead;
-	ar & model.frontView;
-	ar & model.backView;
+	ar & model.ID;
+	ar & model.Name;
+	ar & model.Creatures;
+	ar & model.Overhead;
+	ar & model.FrontView;
+	ar & model.BackView;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::TileClass &model, const unsigned int) {
-	ar & model.terrainFlags;
-	ar & model.import;
-	ar & model.lowerAnims;
-	ar & model.upperAnims;
+	ar & model.TerrainFlags;
+	ar & model.Import;
+	ar & model.LowerAnims;
+	ar & model.UpperAnims;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::Person &model, const unsigned int) {
-	ar & model.personClass;
+	ar & model.PersonClass;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::Sprite &model, const unsigned int) {
-	ar & model.animLayers;
-	ar & model.spriteType;
-	ar & model.personID;
-	ar & model.speed;
-	ar & model.name;
-	ar & model.path;
-	ar & model.scriptPath;
+	ar & model.AnimLayers;
+	ar & model.SpriteType;
+	ar & model.PersonID;
+	ar & model.Speed;
+	ar & model.Name;
+	ar & model.Path;
+	ar & model.ScriptPath;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::Tile &model, const unsigned int) {
-	ar & model.tileClass;
-	ar & model.occupant;
+	ar & model.TileClass;
+	ar & model.Occupant;
 }
 
 template<class Archive>
 void serialize(Archive &ar, models::Zone &model, const unsigned int) {
-	ar & model.tiles;
-	ar & model.initScripts;
-	ar & model.location;
+	ar & model.Tiles;
+	ar & model.InitScripts;
+	ar & model.Location;
 }
 
 }

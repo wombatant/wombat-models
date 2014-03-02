@@ -113,7 +113,6 @@ extern string version;
 
 //string ops
 std::string toStdString(string str);
-const char* toCString(string str);
 
 
 JsonObjOut read(string json);
@@ -189,16 +188,6 @@ inline string toString(string str) {
 //string conversions
 inline std::string toStdString(string str) {
 	return str.toStdString();
-}
-
-inline const char* toCString(std::string str) {
-	const char *out = str.c_str();
-	return out;
-}
-
-inline const char* toCString(string str) {
-	const char *out = toStdString(str).c_str();
-	return out;
 }
 
 inline string toString(std::string str) {
@@ -443,11 +432,6 @@ inline string write(JsonObj obj, JsonSerializationSettings sttngs) {
 
 inline std::string toStdString(string str) {
 	return str;
-}
-
-inline const char* toCString(string str) {
-	const char *out = str.c_str();
-	return out;
 }
 
 
@@ -942,7 +926,7 @@ class SpriteSheetImage: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		Bounds SrcBounds;
+		models::Bounds SrcBounds;
 };
 
 }
@@ -972,7 +956,7 @@ class SpriteSheet: public cyborgbear::Model {
 		int TileWidth;
 		int TileHeight;
 		string SrcFile;
-		QMap< int, SpriteSheetImage > Images;
+		QMap< int, models::SpriteSheetImage > Images;
 		int ImageIdIterator;
 		QVector< int > RecycledImageIds;
 };
@@ -1001,7 +985,7 @@ class Image: public cyborgbear::Model {
 #endif
 		string SpriteSheet;
 		int ImgId;
-		Size DefaultSize;
+		models::Size DefaultSize;
 };
 
 }
@@ -1027,7 +1011,7 @@ class AnimationSlide: public cyborgbear::Model {
 		virtual void fromBoostBinary(string dat);
 #endif
 		int Interval;
-		Image Image;
+		models::Image Image;
 };
 
 }
@@ -1057,11 +1041,11 @@ class CreatureMove: public cyborgbear::Model {
 		int Power;
 		bool RequiresRegarge;
 		string Script;
-		StatusEffect Burn;
-		StatusEffect Freeze;
-		StatusEffect Paralyze;
-		StatusEffect Poison;
-		StatusEffect Sleep;
+		models::StatusEffect Burn;
+		models::StatusEffect Freeze;
+		models::StatusEffect Paralyze;
+		models::StatusEffect Poison;
+		models::StatusEffect Sleep;
 };
 
 }
@@ -1087,7 +1071,7 @@ class CreatureMoveInstance: public cyborgbear::Model {
 		virtual void fromBoostBinary(string dat);
 #endif
 		int CreatureMove;
-		Fraction PP;
+		models::Fraction PP;
 };
 
 }
@@ -1117,7 +1101,7 @@ class Creature: public cyborgbear::Model {
 		string CreatureClass;
 		bool Male;
 		int Level;
-		Fraction Health;
+		models::Fraction Health;
 		int Attack;
 		int SpecAttack;
 		int Defense;
@@ -1126,7 +1110,7 @@ class Creature: public cyborgbear::Model {
 		bool Frozen;
 		bool Poisoned;
 		bool Asleep;
-		QVector< CreatureMoveInstance > Moves;
+		QVector< models::CreatureMoveInstance > Moves;
 };
 
 }
@@ -1153,7 +1137,7 @@ class EditorDockSettings: public cyborgbear::Model {
 #endif
 		bool Docked;
 		bool Visible;
-		Bounds Undocked;
+		models::Bounds Undocked;
 };
 
 }
@@ -1210,7 +1194,7 @@ class ZoneInstance: public cyborgbear::Model {
 #endif
 		string AccessorID;
 		string Path;
-		Point Location;
+		models::Point Location;
 };
 
 }
@@ -1235,7 +1219,7 @@ class Animation: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		QVector< AnimationSlide > Images;
+		QVector< models::AnimationSlide > Images;
 };
 
 }
@@ -1260,8 +1244,8 @@ class AnimLayer: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		Point Point;
-		Animation Animation;
+		models::Point Point;
+		models::Animation Animation;
 };
 
 }
@@ -1286,7 +1270,7 @@ class EditorSettings: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		QMap< string, EditorDockSettings > DockBounds;
+		QMap< string, models::EditorDockSettings > DockBounds;
 		string OpenProject;
 		QVector< string > OpenFiles;
 		int OpenTab;
@@ -1320,8 +1304,8 @@ class CreatureClass: public cyborgbear::Model {
 		QVector< string > Types;
 		QVector< string > CanLearn;
 		QMap< int, string > LearnsAtLevel;
-		Animation FrontView;
-		Animation BackView;
+		models::Animation FrontView;
+		models::Animation BackView;
 };
 
 }
@@ -1348,8 +1332,8 @@ class TileClass: public cyborgbear::Model {
 #endif
 		int TerrainFlags;
 		string Import;
-		QVector< AnimLayer > LowerAnims;
-		QVector< AnimLayer > UpperAnims;
+		QVector< models::AnimLayer > LowerAnims;
+		QVector< models::AnimLayer > UpperAnims;
 };
 
 }
@@ -1374,7 +1358,7 @@ class World: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		QVector< ZoneInstance > Zones;
+		QVector< models::ZoneInstance > Zones;
 };
 
 }
@@ -1399,7 +1383,7 @@ class Sprite: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		QVector< QVector< AnimLayer > > AnimLayers;
+		QVector< QVector< models::AnimLayer > > AnimLayers;
 		int SpriteType;
 		int PersonID;
 		int Speed;
@@ -1433,9 +1417,9 @@ class PersonClass: public cyborgbear::Model {
 		int ID;
 		QMap< string, string > Name;
 		QVector< int > Creatures;
-		QVector< Animation > Overhead;
-		Animation FrontView;
-		Animation BackView;
+		QVector< models::Animation > Overhead;
+		models::Animation FrontView;
+		models::Animation BackView;
 };
 
 }
@@ -1461,7 +1445,7 @@ class ZoneHeader: public cyborgbear::Model {
 		virtual void fromBoostBinary(string dat);
 #endif
 		string Path;
-		Size Size;
+		models::Size Size;
 };
 
 }
@@ -1486,7 +1470,7 @@ class Person: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		PersonClass PersonClass;
+		models::PersonClass PersonClass;
 };
 
 }
@@ -1511,8 +1495,8 @@ class Tile: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		TileClass TileClass;
-		Sprite Occupant;
+		models::TileClass TileClass;
+		models::Sprite Occupant;
 };
 
 }
@@ -1538,7 +1522,7 @@ class SaveFile: public cyborgbear::Model {
 		virtual void fromBoostBinary(string dat);
 #endif
 		QMap< string, cyborgbear::unknown > Vars;
-		User User;
+		models::User User;
 };
 
 }
@@ -1563,9 +1547,9 @@ class Zone: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
-		QVector< QVector< QVector< Tile > > > Tiles;
+		QVector< QVector< QVector< models::Tile > > > Tiles;
 		QVector< string > InitScripts;
-		Point Location;
+		models::Point Location;
 };
 
 }

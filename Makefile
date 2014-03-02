@@ -4,7 +4,7 @@ editormodels:
 	cyborgbear -i models.cy -o editormodels -t cpp-qt
 	rm -f models.cy
 enginemodels:
-	cyborgbear -i enginemodels.cy -o enginemodels -lc
+	cyborgbear -i enginemodels.cy -o enginemodels
 go:
 	cyborgbear -i enginemodels.cy -o models.go -t go
 	go build *.go
