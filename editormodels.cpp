@@ -337,7 +337,7 @@ User::User() {
 
 ZoneInstance::ZoneInstance() {
 	this->AccessorID = "";
-	this->Path = "";
+	this->ZonePath = "";
 }
 
 Animation::Animation() {
@@ -1619,10 +1619,10 @@ cyborgbear::Error ZoneInstance::loadJsonObj(cyborgbear::JsonVal in) {
 		}
 	}
 	{
-		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Path");
+		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "ZonePath");
 		{
 			if (cyborgbear::isString(obj0)) {
-				this->Path = cyborgbear::toString(obj0);
+				this->ZonePath = cyborgbear::toString(obj0);
 			} else {
 				if (cyborgbear::isNull(obj0)) {
 					retval |= cyborgbear::Error_MissingField;
@@ -3140,8 +3140,8 @@ cyborgbear::JsonValOut ZoneInstance::buildJsonObj() {
 		cyborgbear::decref(out0);
 	}
 	{
-		cyborgbear::JsonValOut out0 = cyborgbear::toJsonVal(this->Path);
-		cyborgbear::objSet(obj, "Path", out0);
+		cyborgbear::JsonValOut out0 = cyborgbear::toJsonVal(this->ZonePath);
+		cyborgbear::objSet(obj, "ZonePath", out0);
 		cyborgbear::decref(out0);
 	}
 	{

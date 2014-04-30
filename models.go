@@ -1192,7 +1192,7 @@ func (me *User) ReadObjFile(path string) error {
 
 type ZoneInstance struct {
 	AccessorID string
-	Path string
+	ZonePath string
 	Location Point
 }
 

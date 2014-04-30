@@ -149,7 +149,7 @@ ZoneHeader
 
 ZoneInstance
 	AccessorID string
-	Path       string
+	ZonePath   string
 	Location   Point
 
 User

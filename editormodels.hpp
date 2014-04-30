@@ -1193,7 +1193,7 @@ class ZoneInstance: public cyborgbear::Model {
 		virtual void fromBoostBinary(string dat);
 #endif
 		string AccessorID;
-		string Path;
+		string ZonePath;
 		models::Point Location;
 };
 
@@ -1703,7 +1703,7 @@ void serialize(Archive &ar, models::User &model, const unsigned int) {
 template<class Archive>
 void serialize(Archive &ar, models::ZoneInstance &model, const unsigned int) {
 	ar & model.AccessorID;
-	ar & model.Path;
+	ar & model.ZonePath;
 	ar & model.Location;
 }
 
