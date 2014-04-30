@@ -296,6 +296,7 @@ AnimationSlide::AnimationSlide() {
 }
 
 Settings::Settings() {
+	this->Fullscreen = 0;
 	this->Width = 0;
 	this->Height = 0;
 }
@@ -1005,6 +1006,20 @@ cyborgbear::Error Settings::loadJsonObj(cyborgbear::JsonVal in) {
 	cyborgbear::Error retval = cyborgbear::Error_Ok;
 	cyborgbear::JsonObjOut inObj = cyborgbear::toObj(in);
 
+	{
+		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Fullscreen");
+		{
+			if (cyborgbear::isBool(obj0)) {
+				this->Fullscreen = cyborgbear::toBool(obj0);
+			} else {
+				if (cyborgbear::isNull(obj0)) {
+					retval |= cyborgbear::Error_MissingField;
+				} else {
+					retval |= cyborgbear::Error_TypeMismatch;
+				}
+			}
+		}
+	}
 	{
 		cyborgbear::JsonValOut obj0 = cyborgbear::objRead(inObj, "Width");
 		{
@@ -2780,6 +2795,11 @@ cyborgbear::JsonValOut AnimationSlide::buildJsonObj() {
 
 cyborgbear::JsonValOut Settings::buildJsonObj() {
 	cyborgbear::JsonObjOut obj = cyborgbear::newJsonObj();
+	{
+		cyborgbear::JsonValOut out0 = cyborgbear::toJsonVal(this->Fullscreen);
+		cyborgbear::objSet(obj, "Fullscreen", out0);
+		cyborgbear::decref(out0);
+	}
 	{
 		cyborgbear::JsonValOut out0 = cyborgbear::toJsonVal(this->Width);
 		cyborgbear::objSet(obj, "Width", out0);

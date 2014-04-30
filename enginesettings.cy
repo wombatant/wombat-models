@@ -1,3 +1,4 @@
 Settings
-	Width  int
-	Height int
+	Fullscreen bool
+	Width      int
+	Height     int

@@ -1036,6 +1036,7 @@ class Settings: public cyborgbear::Model {
 
 		virtual void fromBoostBinary(string dat);
 #endif
+		bool Fullscreen;
 		int Width;
 		int Height;
 };
@@ -1617,6 +1618,7 @@ void serialize(Archive &ar, models::AnimationSlide &model, const unsigned int) {
 
 template<class Archive>
 void serialize(Archive &ar, models::Settings &model, const unsigned int) {
+	ar & model.Fullscreen;
 	ar & model.Width;
 	ar & model.Height;
 }
