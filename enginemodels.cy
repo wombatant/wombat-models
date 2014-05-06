@@ -1,4 +1,5 @@
 Animation
+	Import string
 	Images []AnimationSlide
 
 AnimationSlide
@@ -7,7 +8,7 @@ AnimationSlide
 
 AnimLayer
 	Point     Point
-	Animation Animation
+	Animation string # Animation import
 
 CreatureType
 	Name          map[string]string
@@ -126,8 +127,8 @@ Sprite
 	ScriptPath string
 
 TileClass
-	TerrainFlags int
 	Import       string
+	TerrainFlags int
 	LowerAnims   []AnimLayer
 	UpperAnims   []AnimLayer
 
