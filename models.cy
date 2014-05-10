@@ -126,21 +126,21 @@ Sprite
 	Path       string
 	ScriptPath string
 
-TileClass
+Tile
 	Import       string
 	TerrainFlags int
 	LowerAnims   []AnimLayer
 	UpperAnims   []AnimLayer
 
-Tile
-	TileClass TileClass
+TileInstance
+	Tile      Tile
 	Occupant  Sprite
 
 World
 	Zones []ZoneInstance
 
 Zone
-	Tiles       [][][]Tile
+	Tiles       [][][]TileInstance
 	InitScripts []string
 	Location    Point
 
