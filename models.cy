@@ -58,8 +58,8 @@ Sprite
 Tile
 	Import       string
 	TerrainFlags int
-	LowerAnims   []AnimLayer
-	UpperAnims   []AnimLayer
+	LowerAnim    AnimLayer
+	UpperAnim    AnimLayer
 
 TileInstance
 	Tile      Tile
