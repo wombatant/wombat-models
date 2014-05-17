@@ -57,7 +57,7 @@ Sprite
 
 Tile
 	Import       string
-	TerrainFlags int
+	TerrainType  int
 	LowerAnim    AnimLayer
 	UpperAnim    AnimLayer
 
