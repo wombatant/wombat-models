@@ -70,8 +70,6 @@ World
 
 Zone
 	Tiles       [][][]TileInstance
-	InitScripts []string
-	Location    Point
 
 ZoneHeader
 	Zone      string
