@@ -74,10 +74,23 @@ Zone
 	Location    Point
 
 ZoneHeader
-	Path string
-	Size Size
+	Zone      string
+	TilesWide int
+	TilesHigh int
+	Layers    int
 
 ZoneInstance
 	AccessorID string
-	ZonePath   string
-	Location   Point
+	ZoneHeader string
+	Address    Point
+
+PersonClass
+	ID        int
+	Name      map[string]string
+	Creatures []string # paths to the Creatures this Person owns
+	Overhead  []Animation
+	FrontView Animation
+	BackView  Animation
+
+Person
+	PersonClass PersonClass

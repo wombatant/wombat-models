@@ -59,26 +59,3 @@ Fraction
 
 ModelFile
 	Type string
-
-PersonClass
-	ID        int
-	Name      map[string]string
-	Creatures []int
-	Overhead  []Animation
-	FrontView Animation
-	BackView  Animation
-
-Person
-	PersonClass PersonClass
-
-User
-	PersonID int
-	World    string
-	Zone     string
-	XAddress int
-	YAddress int
-	Layer    int
-
-SaveFile
-	Vars map[string]unknown
-	User User
