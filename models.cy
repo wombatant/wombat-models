@@ -69,7 +69,7 @@ World
 	Zones []ZoneInstance
 
 Zone
-	Tiles       [][][]TileInstance
+	Tiles [][][]TileInstance
 
 ZoneHeader
 	Zone      string
@@ -83,7 +83,7 @@ ZoneInstance
 	Address    Point
 
 PersonClass
-	ID        int
+	Import    string
 	Name      map[string]string
 	Creatures []string # paths to the Creatures this Person owns
 	Overhead  []Animation
