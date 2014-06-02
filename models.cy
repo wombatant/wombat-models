@@ -55,21 +55,21 @@ Sprite
 	Path       string
 	ScriptPath string
 
-Tile
+TileClass
 	Import       string
 	TerrainType  int
 	LowerAnim    AnimLayer
 	UpperAnim    AnimLayer
 
-TileInstance
-	Tile      Tile
+Tile
+	TileClass TileClass
 	Occupant  Sprite
 
 World
 	Zones []ZoneInstance
 
 Zone
-	Tiles [][][]TileInstance
+	Tiles [][][]Tile
 
 ZoneHeader
 	Zone      string
