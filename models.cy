@@ -46,14 +46,13 @@ Image
 	ImgId       int
 	DefaultSize Size
 
-Sprite
+SpriteClass
 	AnimLayers [][]AnimLayer
-	SpriteType int
-	PersonID   int
-	Speed      int
-	Name       string
-	Path       string
-	ScriptPath string
+	SpriteType int # (Inanimate = 0, Person = 1, Creature = 2)
+	Attributes string # content differs depending on SpriteType
+
+Sprite
+	SpriteClass string
 
 TileClass
 	Import       string
@@ -86,7 +85,7 @@ PersonClass
 	Import    string
 	Name      map[string]string
 	Creatures []string # paths to the Creatures this Person owns
-	Overhead  []Animation
+	Overhead  [][]Animation
 	FrontView Animation
 	BackView  Animation
 
