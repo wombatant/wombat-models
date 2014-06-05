@@ -85,7 +85,7 @@ PersonClass
 	Import    string
 	Name      map[string]string
 	Creatures []string # paths to the Creatures this Person owns
-	Overhead  [][]Animation
+	Overhead  [][]AnimLayer
 	FrontView Animation
 	BackView  Animation
 
