@@ -53,6 +53,10 @@ SpriteClass
 
 Sprite
 	SpriteClass string
+	Motion      int # (Still = 0, Walking = 1)
+	Facing      int # (North = 0, South = 1, East = 2, West = 3)
+	SpriteType  int # (Inanimate = 0, Person = 1, Creature = 2)
+	Data        string # content differs depending on SpriteType
 
 TileClass
 	Import       string
@@ -83,11 +87,13 @@ ZoneInstance
 
 PersonClass
 	Import    string
-	Name      map[string]string
-	Creatures []string # paths to the Creatures this Person owns
+	Title     map[string]string
+	# [x][y]: x - (North/South/East/West), y - (Still = 0, Walking = 1)
 	Overhead  [][]AnimLayer
 	FrontView Animation
 	BackView  Animation
 
 Person
 	PersonClass PersonClass
+	Name        map[string]string
+	Creatures   []string # paths to the Creatures this Person owns
