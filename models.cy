@@ -52,6 +52,7 @@ SpriteClass
 	Attributes string # content differs depending on SpriteType
 
 Sprite
+	Id          string
 	SpriteClass string
 	Motion      int # (Still = 1, Walking = 2)
 	Facing      int # (North = 1, South = 2, East = 3, West = 4)
@@ -59,10 +60,10 @@ Sprite
 	Data        string # content differs depending on SpriteType
 
 TileClass
-	Import       string
-	TerrainType  int
-	LowerAnim    AnimLayer
-	UpperAnim    AnimLayer
+	Import      string
+	TerrainType int
+	LowerAnim   AnimLayer
+	UpperAnim   AnimLayer
 
 Tile
 	TileClass TileClass
