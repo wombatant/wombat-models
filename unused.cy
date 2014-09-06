@@ -16,18 +16,6 @@ CreatureClass
 	FrontView     Animation
 	BackView      Animation
 
-CreatureMove
-	Name            map[string]string
-	Type            string
-	Power           int
-	RequiresRegarge bool
-	Script          string
-	Burn            StatusEffect
-	Freeze          StatusEffect
-	Paralyze        StatusEffect
-	Poison          StatusEffect
-	Sleep           StatusEffect
-
 CreatureMoveInstance
 	CreatureMove int
 	PP           Fraction
@@ -48,10 +36,6 @@ Creature
 	Poisoned      bool
 	Asleep        bool
 	Moves         []CreatureMoveInstance
-
-StatusEffect
-	AttackerEffect int
-	EnemyEffect    int
 
 Fraction
 	Current   int

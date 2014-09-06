@@ -54,9 +54,9 @@ SpriteClass
 Sprite
 	Id          string
 	SpriteClass string
-	Motion      int # (Still = 1, Walking = 2)
-	Facing      int # (North = 1, South = 2, East = 3, West = 4)
-	SpriteType  int # (Inanimate = 1, Person = 2, Creature = 3)
+	Motion      int # (Still = 0, Walking = 1)
+	Facing      int # (North = 0, South = 1, East = 2, West = 3)
+	SpriteType  int # (Inanimate = 0, Person = 1, Creature = 2)
 	Data        string # content differs depending on SpriteType
 
 TileClass
@@ -85,6 +85,23 @@ ZoneInstance
 	AccessorID string
 	ZoneHeader string
 	Address    Point
+
+CreatureMove
+	Name              map[string]string
+	Type              string
+	Power             int
+	RequiresRegarge   bool
+	Script            string
+	Burn              StatusEffect
+	Freeze            StatusEffect
+	Paralyze          StatusEffect
+	Poison            StatusEffect
+	Sleep             StatusEffect
+	WorldAbilityFlags int # 1 = Swim, 2 = Whirlpool, 4 = Waterfall, 8 = Cut, 16 = Light
+
+StatusEffect
+	AttackerEffect int
+	EnemyEffect    int
 
 PersonClass
 	Import    string
