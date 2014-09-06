@@ -148,7 +148,7 @@ PersonClass
 	Import    string
 	Title     map[string]string
 	# [x][y]: x - (North/South/East/West), y - (Still = 0, Walking = 1)
-	Overhead  [][]AnimLayer
+	Overhead  [][][]AnimLayer
 	FrontView Animation
 	BackView  Animation
 
