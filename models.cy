@@ -46,6 +46,10 @@ Image
 	ImgId       int
 	DefaultSize Size
 
+Interaction
+	Type int # (Text = 0, Script = 1)
+	Next unknown
+
 SpriteClass
 	AnimLayers [][]AnimLayer
 	SpriteType int # (Inanimate = 1, Person = 2, Creature = 3)
@@ -57,6 +61,7 @@ Sprite
 	Motion      int # (Still = 0, Walking = 1)
 	Facing      int # (North = 0, South = 1, East = 2, West = 3)
 	SpriteType  int # (Inanimate = 0, Person = 1, Creature = 2)
+	Interaction Interaction
 	Data        string # content differs depending on SpriteType
 
 TileClass
@@ -156,3 +161,6 @@ Person
 	PersonClass PersonClass
 	Name        map[string]string
 	Creatures   []string # paths to the Creatures this Person owns
+
+Font
+	TtfPath   string
