@@ -163,4 +163,5 @@ Person
 	Creatures   []string # paths to the Creatures this Person owns
 
 Font
-	TtfPath   string
+	Size    int
+	TtfPath string
