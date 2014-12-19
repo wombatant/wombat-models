@@ -52,7 +52,6 @@ Interaction
 
 SpriteClass
 	AnimLayers [][]AnimLayer
-	SpriteType int # (Inanimate = 1, Person = 2, Creature = 3)
 	Attributes string # content differs depending on SpriteType
 
 Sprite
